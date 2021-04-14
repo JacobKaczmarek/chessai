@@ -1,7 +1,7 @@
 
 
-const generateBestMove = () => {
-  return miniMaxRoot(game, 4, false);
+const generateBestMove = (depth) => {
+  return miniMaxRoot(game, depth, false);
 }
 
 const miniMaxRoot = (game, depth, isMaximising) => {

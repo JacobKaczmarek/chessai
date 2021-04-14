@@ -1,7 +1,7 @@
 import { generateBestMove } from './engine.js';
 
 const aiMove = () => {
-  const move = generateBestMove();
+  const move = generateBestMove(depth);
   game.move(move);
   board.position(game.fen())
 }

@@ -14,10 +14,17 @@
 <body>
   <div class="container">
     <div id="board"></div>
+    <div class="menu">
+      <label for="depth">Difficulty</label>
+      <input id="depth" type="range" min="1" max="4">
+    </div>
   </div>
   <script>
     const game = new Chess()
     let board = null;
+    let depth = 3;
+
+    document.getElementById('depth').addEventListener('change', (e) => depth = e.target.value)
   </script>
   <script type="module" src="./index.js"></script>
 </body>
