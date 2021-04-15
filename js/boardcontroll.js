@@ -1,14 +1,18 @@
 import { generateBestMove, evaluate } from './engine.js';
 
 const aiMove = () => {
-  const start = Date.now();
+  positionCount = 0;
 
+  const start = Date.now();
   const move = generateBestMove(depth);
+  const finish = Date.now();
+  
   game.move(move);
   board.position(game.fen())
 
   console.log(`
-    Calculation time: ${(Date.now() - start) / 1000}s
+    Calculation time: ${(finish - start) / 1000}s
+    Positions checked: ${positionCount}
     Current board: ${evaluate(game)}
   `);
 }
@@ -17,6 +21,8 @@ const onChange = () => {
   if (game.game_over()) {
     alert('Game over');
   }
+
+  document.getElementById('moves').innerText = game.history()
 }
 
 const onDragStart = (source, piece, position, orientation) => {

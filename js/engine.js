@@ -11,7 +11,7 @@ const miniMaxRoot = (game, depth, isMaximising) => {
 
   allMoves.forEach(move => {
     game.move(move);
-    const boardValue = minimax(game, depth - 1, !isMaximising);
+    const boardValue = minimax(game, depth - 1, -1000, 1000, !isMaximising);
     game.undo();
 
     if (boardValue >= bestValue) {
@@ -23,7 +23,9 @@ const miniMaxRoot = (game, depth, isMaximising) => {
   return bestMove;
 }
 
-const minimax = (game, depth, isMaximising) => {
+const minimax = (game, depth, alpha, beta, isMaximising) => {
+  positionCount++;
+
   if (depth === 0) {
     return -evaluate(game);
   }
@@ -36,26 +38,41 @@ const minimax = (game, depth, isMaximising) => {
 
     allMoves.forEach(move => {
       game.move(move);
-      boardValue = minimax(game, depth - 1, !isMaximising);
-
-      bestValue = Math.max(boardValue, bestValue);
-
+      bestValue = Math.max(
+        minimax(game, depth - 1, alpha, beta, !isMaximising),
+        bestValue
+      );
       game.undo();
+
+      alpha = Math.max(alpha, bestValue);
+
+      if (beta <= alpha) {
+        return bestValue
+      }
     })
+
+    return bestValue;
+
   } else {
     let bestValue = 1000;
 
     allMoves.forEach((move) => {
       game.move(move);
-      boardValue = minimax(game, depth - 1, !isMaximising);
-
-      bestValue = Math.min(boardValue, bestValue);
-
+      bestValue = Math.min(
+        minimax(game, depth - 1, alpha, beta, !isMaximising),
+        bestValue
+      );
       game.undo();
-    });
-  }
 
-  return boardValue;
+      beta = Math.min(beta, bestValue);
+
+      if (beta <= alpha) {
+        return bestValue;
+      }
+    });
+
+    return bestValue;
+  }
 }
 
 const evaluate = (game) => {
@@ -97,8 +114,6 @@ const piecePositionValue = (piece, i, j) => {
   if (piece === null) return 0;
 
   let value;
-  const multiplier = piece.color === 'w' ? 1 : -1;
-
   switch (piece.type) {
     case 'p':
       value = piece.color === 'w' ? pieceSquareValues.earlyPawnWhite[i][j] : pieceSquareValues.earlyPawnBlack[i][j]
@@ -120,7 +135,7 @@ const piecePositionValue = (piece, i, j) => {
       break;
   }
 
-  return value * multiplier;
+  return piece.color === 'w' ? value : -value;
 }
 
 export { generateBestMove, evaluate }
