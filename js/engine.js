@@ -1,27 +1,24 @@
-
+import pieceSquareValues from './pieceSquareValues.js';
 
 const generateBestMove = (depth) => {
-  return miniMaxRoot(game, depth, false);
+  return miniMaxRoot(game, depth, true);
 }
 
 const miniMaxRoot = (game, depth, isMaximising) => {
   const allMoves = game.moves();
   let bestMove = null;
-  let bestValue = 1000;
-  const start = Date.now();
+  let bestValue = -1000;
 
   allMoves.forEach(move => {
     game.move(move);
-    const boardValue = -minimax(game, depth - 1, !isMaximising);
+    const boardValue = minimax(game, depth - 1, !isMaximising);
     game.undo();
 
-    if (boardValue < bestValue) {
+    if (boardValue >= bestValue) {
       bestMove = move;
       bestValue = boardValue;
     }
   })
-  
-  console.log(`Calculation time: ${(Date.now() - start) / 1000}s`);
 
   return bestMove;
 }
@@ -41,7 +38,7 @@ const minimax = (game, depth, isMaximising) => {
       game.move(move);
       boardValue = minimax(game, depth - 1, !isMaximising);
 
-      bestValue = boardValue > bestValue ? boardValue : bestValue;
+      bestValue = Math.max(boardValue, bestValue);
 
       game.undo();
     })
@@ -52,7 +49,7 @@ const minimax = (game, depth, isMaximising) => {
       game.move(move);
       boardValue = minimax(game, depth - 1, !isMaximising);
 
-      bestValue = boardValue < bestValue ? boardValue : bestValue;
+      bestValue = Math.min(boardValue, bestValue);
 
       game.undo();
     });
@@ -63,13 +60,17 @@ const minimax = (game, depth, isMaximising) => {
 
 const evaluate = (game) => {
   const board = game.board();
-  let value = 0;
+  let material = 0;
+  let positioning = 0;
 
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
-      value += pieceValue(board[i][j]);
+      material += pieceValue(board[i][j]);
+      positioning += piecePositionValue(board[i][j], i, j)
     }
   }
+
+  const value = material + positioning;
 
   return value;
 }
@@ -81,15 +82,45 @@ const pieceValue = (piece) => {
   }
 
   const values = {
-    p: 1,
-    n: 3,
-    b: 3,
-    r: 5,
-    q: 9,
-    k:90
+    p: 10,
+    n: 30,
+    b: 30,
+    r: 50,
+    q: 90,
+    k: 900
   }
 
   return piece !== null ? values[piece.type] * side[piece.color] : 0;
 }
 
-export { generateBestMove }
+const piecePositionValue = (piece, i, j) => {
+  if (piece === null) return 0;
+
+  let value;
+  const multiplier = piece.color === 'w' ? 1 : -1;
+
+  switch (piece.type) {
+    case 'p':
+      value = piece.color === 'w' ? pieceSquareValues.earlyPawnWhite[i][j] : pieceSquareValues.earlyPawnBlack[i][j]
+      break;
+    case 'n':
+      value = piece.color === 'w' ? pieceSquareValues.earlyKnightWhite[i][j] : pieceSquareValues.earlyKnightBlack[i][j]
+      break;
+    case 'b':
+      value = piece.color === 'w' ? pieceSquareValues.earlyBishopWhite[i][j] : pieceSquareValues.earlyBishopBlack[i][j]
+      break;
+    case 'r':
+      value = piece.color === 'w' ? pieceSquareValues.earlyRookWhite[i][j] : pieceSquareValues.earlyRookBlack[i][j]
+      break;
+    case 'q':
+      value = piece.color === 'w' ? pieceSquareValues.earlyQueenWhite[i][j] : pieceSquareValues.earlyQueenBlack[i][j]
+      break;
+    case 'k':
+      value = piece.color === 'w' ? pieceSquareValues.earlyKingWhite[i][j] : pieceSquareValues.earlyKingBlack[i][j]
+      break;
+  }
+
+  return value * multiplier;
+}
+
+export { generateBestMove, evaluate }

@@ -1,9 +1,16 @@
-import { generateBestMove } from './engine.js';
+import { generateBestMove, evaluate } from './engine.js';
 
 const aiMove = () => {
+  const start = Date.now();
+
   const move = generateBestMove(depth);
   game.move(move);
   board.position(game.fen())
+
+  console.log(`
+    Calculation time: ${(Date.now() - start) / 1000}s
+    Current board: ${evaluate(game)}
+  `);
 }
 
 const onChange = () => {
